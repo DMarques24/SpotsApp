@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:sportsocial/screens/auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:sportsocial/screens/home.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const App());
 }
 
@@ -16,7 +21,7 @@ class App extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const AuthScreen(),
+      home: const HomeScreen(), //AuthScreen(),
     );
   }
 }
