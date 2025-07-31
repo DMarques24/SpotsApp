@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "323752104864",
+    "project_id": "socialsportsapp-53edc",
+    "storage_bucket": "socialsportsapp-53edc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:323752104864:android:62a3271f184ef9656dcac5",
+        "android_client_info": {
+          "package_name": "com.example.sportsocial"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAHFASIa7ipNvn28Fgp95zt0MkmXMjk4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

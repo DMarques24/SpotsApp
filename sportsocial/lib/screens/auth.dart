@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sportsocial/screens/home.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -146,7 +148,9 @@ class _AuthScreen extends State<AuthScreen> {
                           ),
                         ),
                         onPressed: () {
-                          // Add your authentication logic here
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (ctx) => HomeScreen()),
+                          );
                         },
                         child: const Text(
                           'Login',
