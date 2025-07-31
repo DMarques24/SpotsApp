@@ -2,5 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:sportsocial/screens/auth.dart';
 
 void main() {
-  runApp(const AuthScreen());
+  runApp(const App());
+}
+
+class App extends StatelessWidget {
+  const App({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'SportSocial',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const AuthScreen(),
+    );
+  }
 }
