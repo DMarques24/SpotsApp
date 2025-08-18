@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:sportsocial/screens/messages.dart';
-import 'package:sportsocial/widgets/history.dart';
-import 'package:sportsocial/widgets/post.dart';
+import 'package:sportsocial/screens/home.dart';
+import 'package:sportsocial/widgets/messageCard.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class MessagesScreen extends StatefulWidget {
+  const MessagesScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<MessagesScreen> createState() {
+    return _MessagesScreenState();
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _MessagesScreenState extends State<MessagesScreen> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      Navigator.push(
+    if (index == 0) {
+      Navigator.pop(
         context,
-        MaterialPageRoute(builder: (ctx) => const MessagesScreen()),
+        MaterialPageRoute(builder: (ctx) => const HomeScreen()),
       );
     } else {
       setState(() {
@@ -82,33 +83,34 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
-        child: const Center(
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  HistoryWidget(
-                    image:
-                        '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
-                    name: 'Kelly',
-                  ),
-                ],
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF191919),
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(color: const Color(0xFF3F3F3F), width: 1),
               ),
-              SizedBox(height: 24),
-              PostWidget(
-                personImage:
-                    '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
-                personName: 'John Smith',
-                personappName: '@johnsmith122',
-                postImage:
-                    '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/postImage.jpg',
-                numLiks: 4500,
-                numComments: 254,
-                description:
-                    'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+              child: TextField(
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Search message',
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  border: InputBorder.none,
+                  suffixIcon: const Icon(Icons.search, color: Colors.white),
+                ),
               ),
-            ],
-          ),
+            ),
+            SizedBox(height: 24),
+            MessageCardWidget(
+              personImage:
+                  '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
+              personName: 'John Smith',
+              message:
+                  'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: Padding(
