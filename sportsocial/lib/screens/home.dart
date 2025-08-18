@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sportsocial/screens/messages.dart';
+import 'package:sportsocial/screens/profile.dart';
 import 'package:sportsocial/widgets/history.dart';
 import 'package:sportsocial/widgets/post.dart';
 
@@ -18,6 +19,11 @@ class _HomeScreenState extends State<HomeScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (ctx) => const MessagesScreen()),
+      );
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (ctx) => const ProfileScreen()),
       );
     } else {
       setState(() {
