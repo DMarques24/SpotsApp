@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportsocial/screens/chat.dart';
 import 'package:sportsocial/screens/home.dart';
 import 'package:sportsocial/widgets/messageCard.dart';
 
@@ -109,6 +110,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
               personName: 'John Smith',
               message:
                   'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (ctx) => const ChatScreen()),
+                );
+              },
             ),
           ],
         ),
