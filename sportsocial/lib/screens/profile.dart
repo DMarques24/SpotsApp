@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sportsocial/screens/editProfile.dart';
 import 'package:sportsocial/screens/home.dart';
 import 'package:sportsocial/widgets/FieldCards.dart';
 
@@ -90,7 +91,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: IconButton(
                 icon: const Icon(Icons.edit, color: Colors.white),
                 onPressed: () {
-                  // Edit action
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => const EditProfileScreen(),
+                    ),
+                  );
                 },
               ),
             ),
