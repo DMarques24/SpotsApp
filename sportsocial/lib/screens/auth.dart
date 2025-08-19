@@ -90,7 +90,7 @@ class _AuthScreen extends State<AuthScreen> {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            '/Users/diogomomarques/Desktop/Flutter_Projects/SpotsApp/sportsocial/assets/c50e7d2ffff44907dd3e9619fb089d9a5837137b.jpg',
+            '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/backgroundAuth.jpg',
             fit: BoxFit.cover,
           ),
           Align(
@@ -294,7 +294,6 @@ class _AuthScreen extends State<AuthScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Toggle login/signup
                       Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,

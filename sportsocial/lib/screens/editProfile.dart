@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sportsocial/widgets/CustomTextField.dart';
 
@@ -9,6 +11,40 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final String name = "Edit Profile";
+  final String email = "henry@gmail.com";
+  final int age = 25;
+  final int height = 190;
+  final String sports = "Football";
+  final String club = "FC Porto";
+  final String position = "Striker";
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref("users");
+
+  Future<void> _saveData() async {
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      await _dbRef.child(user.uid).set({
+        'name': name,
+        'email': email,
+        'age': age,
+        'height': height,
+        'sports': sports,
+        'club': club,
+        'position': position,
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Erro: utilizador não autenticado."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +64,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // Avatar centrado em cima
             Stack(
               children: [
                 const CircleAvatar(
@@ -48,40 +83,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
-
-            // Campos de texto
-            const CustomTextField(label: "Full Name", value: "Curtney Henry"),
+            CustomTextField(label: "Full Name", value: name),
             const SizedBox(height: 16),
-
-            const CustomTextField(label: "Email", value: "henry@gmail.com"),
+            CustomTextField(label: "Email", value: email),
             const SizedBox(height: 16),
-
             Row(
               children: [
-                Expanded(child: CustomTextField(label: "Age", value: "25")),
+                Expanded(
+                  child: CustomTextField(label: "Age", value: age.toString()),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: CustomTextField(label: "Height", value: "190")),
+                Expanded(
+                  child: CustomTextField(
+                    label: "Height",
+                    value: height.toString(),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
-            const CustomTextField(label: "Sports", value: "Football"),
+            CustomTextField(label: "Sports", value: sports),
             const SizedBox(height: 16),
-            const CustomTextField(label: "Club", value: "FC Porto"),
+            CustomTextField(label: "Club", value: club),
             const SizedBox(height: 16),
-            const CustomTextField(label: "Position", value: "Striker"),
+            CustomTextField(label: "Position", value: position),
           ],
         ),
       ),
-
-      // Botão no fundo
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: GestureDetector(
-          onTap: () {
-            // aqui colocas a lógica de update
-            print("Update Profile pressed");
+          onTap: () async {
+            await _saveData();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Profile updated successfully!"),
+                backgroundColor: Colors.green,
+              ),
+            );
           },
           child: Container(
             height: 55,
