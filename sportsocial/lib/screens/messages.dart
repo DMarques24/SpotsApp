@@ -59,7 +59,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: CircleAvatar(
-              backgroundColor: Color(0x191919),
+              backgroundColor: Color(0x00191919),
               child: IconButton(
                 icon: Icon(Icons.search, color: Colors.white),
                 onPressed: () {
@@ -71,7 +71,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: CircleAvatar(
-              backgroundColor: Color(0x191919),
+              backgroundColor: Color(0x00191919),
               child: IconButton(
                 icon: Icon(Icons.notifications, color: Colors.white),
                 onPressed: () {

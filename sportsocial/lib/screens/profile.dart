@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:sportsocial/screens/editProfile.dart';
 import 'package:sportsocial/screens/home.dart';
@@ -11,16 +12,31 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref().child(
+    "users",
+  );
+  Map<dynamic, dynamic>? userData;
   int _selectedIndex = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  void _fetchUserData() async {
+    DatabaseEvent event =
+        await _dbRef.child("UWrkg2rKiXdBhP13ef3PpZHaLgV2").once();
+    setState(() {
+      userData = event.snapshot.value as Map?;
+    });
+  }
 
   void _onItemTapped(int index) {
     if (index == 2) {
-      /* Navigator.push(
-        context,
-        MaterialPageRoute(builder: (ctx) => const MessagesScreen()),
-      ); */
+      // Navegação futura para mensagens
     } else if (index == 0) {
-      Navigator.pop(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (ctx) => const HomeScreen()),
       );
@@ -103,73 +119,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
-        child: Column(
-          children: [
-            const CircleAvatar(
-              radius: 48,
-              backgroundImage: AssetImage(
-                '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
+      body:
+          userData == null
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 20.0,
+                ),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 48,
+                      backgroundImage: AssetImage(
+                        '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      userData!['name'] ?? 'No Name',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '@lindo',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    const SizedBox(height: 24),
+                    // Stats Container
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF191919),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildStatItem('100', 'Followers'),
+                          Container(
+                            height: 40,
+                            width: 1,
+                            color: Colors.white24,
+                          ),
+                          _buildStatItem('20', 'Following'),
+                          Container(
+                            height: 40,
+                            width: 1,
+                            color: Colors.white24,
+                          ),
+                          _buildStatItem(
+                            userData!['height']?.toString() ?? '0',
+                            'Height (cm)',
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Column(
+                      children: [
+                        FieldCardsWidget(
+                          fieldName: 'Email',
+                          value: userData!['email'] ?? 'No Email',
+                        ),
+                        const SizedBox(height: 12),
+                        FieldCardsWidget(
+                          fieldName: 'Sports',
+                          value: userData!['sports'] ?? 'N/A',
+                        ),
+                        const SizedBox(height: 12),
+                        FieldCardsWidget(
+                          fieldName: 'Club',
+                          value: userData!['club'] ?? 'N/A',
+                        ),
+                        const SizedBox(height: 12),
+                        FieldCardsWidget(
+                          fieldName: 'Position',
+                          value: userData!['position'] ?? 'N/A',
+                        ),
+                        const SizedBox(height: 12),
+                        FieldCardsWidget(
+                          fieldName: 'Age',
+                          value: userData!['age']?.toString() ?? 'N/A',
+                        ),
+                        const SizedBox(height: 80),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Courtney Henry',
-              style: TextStyle(
-                fontSize: 24,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '@henrycourtney',
-              style: TextStyle(fontSize: 16, color: Colors.white70),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-            const SizedBox(height: 24),
-            // Stats Container (Top)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF191919),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatItem('25.2K', 'Followers'),
-                  Container(height: 40, width: 1, color: Colors.white24),
-                  _buildStatItem('254', 'Following'),
-                  Container(height: 40, width: 1, color: Colors.white24),
-                  _buildStatItem('198', 'Height (cm)'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Column(
-              children: [
-                FieldCardsWidget(fieldName: 'Email', value: 'henry@gmail.com'),
-                const SizedBox(height: 12),
-                FieldCardsWidget(fieldName: 'Sports', value: 'Football'),
-                const SizedBox(height: 12),
-                FieldCardsWidget(fieldName: 'Club', value: 'FC Real Madrid'),
-                const SizedBox(height: 12),
-                FieldCardsWidget(fieldName: 'Position', value: 'Goal Keeper'),
-                const SizedBox(height: 12),
-                FieldCardsWidget(fieldName: 'Age', value: '25 Years'),
-                const SizedBox(height: 80), // Extra space at bottom
-              ],
-            ),
-          ],
-        ),
-      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Container(
