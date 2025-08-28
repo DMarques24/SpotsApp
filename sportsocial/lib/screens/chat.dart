@@ -1,14 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sportsocial/widgets/messageChat.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String chatId; // o id da conversa entre 2 pessoas
+  const ChatScreen({super.key, required this.chatId});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _messageController = TextEditingController();
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+
+  /// Enviar mensagem para o Firestore
+  Future<void> _sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+
+    // Buscar participantes do chat
+    final chatDoc =
+        await FirebaseFirestore.instance
+            .collection('chats')
+            .doc(widget.chatId)
+            .get();
+
+    final participants = List<String>.from(chatDoc['participants']);
+    final receiverId = participants.firstWhere(
+      (uid) => uid != currentUser!.uid,
+    );
+
+    // Atualizar o campo updatedAt
+    await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .update({'updatedAt': FieldValue.serverTimestamp()});
+
+    await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .collection('messages')
+        .add({
+          'text': _messageController.text.trim(),
+          'senderId': currentUser!.uid,
+          'reciverId': receiverId,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+    _messageController.clear();
+  }
+
+  /// Stream das mensagens em tempo real
+  Stream<QuerySnapshot> _messagesStream() {
+    return FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: false)
+        .snapshots();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,22 +78,50 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         centerTitle: false,
       ),
-      body: Column(
-        children: [
-          MessageChatWidget(
-            myMessage: false,
-            profileImage:
-                '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
-            message: 'Lorem Ipsum is simply dummy text',
-            time: '10:30 pm',
-          ),
-          MessageChatWidget(
-            myMessage: true,
-            message:
-                'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
-            time: '10:30 pm',
-          ),
-        ],
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _messagesStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text(
+                "Sem mensagens ainda...",
+                style: TextStyle(color: Colors.white54),
+              ),
+            );
+          }
+
+          final messages = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: messages.length,
+            itemBuilder: (context, index) {
+              final msg = messages[index];
+              final isMe = msg['senderId'] == currentUser!.uid;
+
+              return MessageChatWidget(
+                myMessage: isMe,
+                message: msg['text'],
+                time:
+                    msg['timestamp'] != null
+                        ? (msg['timestamp'] as Timestamp)
+                            .toDate()
+                            .toLocal()
+                            .toString()
+                            .substring(11, 16)
+                        : '',
+                profileImage:
+                    !isMe
+                        ? '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg'
+                        : null,
+              );
+            },
+          );
+        },
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -61,20 +141,19 @@ class _ChatScreenState extends State<ChatScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
+                  controller: _messageController,
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
                     hintText: 'Type message...',
                     hintStyle: TextStyle(color: Colors.white54),
                     border: InputBorder.none,
                   ),
+                  onSubmitted: (_) => _sendMessage(),
                 ),
               ),
               IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.emoji_emotions_outlined,
-                  color: Colors.white,
-                ),
+                onPressed: _sendMessage,
+                icon: const Icon(Icons.send, color: Colors.white),
               ),
             ],
           ),
