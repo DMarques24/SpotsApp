@@ -47,7 +47,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return _firestore
         .collection('chats')
         .where('participants', arrayContains: uid)
-        .snapshots(); // Removido orderBy('updatedAt')
+        .snapshots();
   }
 
   /// Busca o último texto da conversa
