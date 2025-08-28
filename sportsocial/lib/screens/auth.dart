@@ -34,13 +34,14 @@ class _AuthScreen extends State<AuthScreen> {
         _isAuthenticating = true;
       });
 
+      UserCredential userCredentials;
       if (_isLogin) {
-        await _firebase.signInWithEmailAndPassword(
+        userCredentials = await _firebase.signInWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
         );
       } else {
-        final userCredentials = await _firebase.createUserWithEmailAndPassword(
+        userCredentials = await _firebase.createUserWithEmailAndPassword(
           email: _enteredEmail,
           password: _enteredPassword,
         );

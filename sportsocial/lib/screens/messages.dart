@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:sportsocial/screens/chat.dart';
 import 'package:sportsocial/screens/home.dart';
-import 'package:sportsocial/widgets/messageCard.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
 
   @override
-  State<MessagesScreen> createState() {
-    return _MessagesScreenState();
-  }
+  State<MessagesScreen> createState() => _MessagesScreenState();
 }
 
 class _MessagesScreenState extends State<MessagesScreen> {
   int _selectedIndex = 0;
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
 
   void _onItemTapped(int index) {
     if (index == 0) {
-      Navigator.pop(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (ctx) => const HomeScreen()),
       );
@@ -40,8 +42,38 @@ class _MessagesScreenState extends State<MessagesScreen> {
     );
   }
 
+  /// Stream de todos os chats do utilizador atual
+  Stream<QuerySnapshot> _userChatsStream(String uid) {
+    return _firestore
+        .collection('chats')
+        .where('participants', arrayContains: uid)
+        .snapshots(); // Removido orderBy('updatedAt')
+  }
+
+  /// Busca o último texto da conversa
+  Future<String> _getLastMessage(String chatId) async {
+    final messages =
+        await _firestore
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages')
+            .orderBy('timestamp', descending: true)
+            .limit(1)
+            .get();
+
+    if (messages.docs.isNotEmpty) {
+      return messages.docs.first['text'] ?? '';
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      return const Scaffold(body: Center(child: Text('Não autenticado')));
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -62,9 +94,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               backgroundColor: Color(0x00191919),
               child: IconButton(
                 icon: Icon(Icons.search, color: Colors.white),
-                onPressed: () {
-                  // Ação de busca
-                },
+                onPressed: () {},
               ),
             ),
           ),
@@ -74,9 +104,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               backgroundColor: Color(0x00191919),
               child: IconButton(
                 icon: Icon(Icons.notifications, color: Colors.white),
-                onPressed: () {
-                  // Ação de notificações
-                },
+                onPressed: () {},
               ),
             ),
           ),
@@ -95,27 +123,90 @@ class _MessagesScreenState extends State<MessagesScreen> {
               ),
               child: TextField(
                 style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Search message',
-                  hintStyle: const TextStyle(color: Colors.white54),
+                  hintStyle: TextStyle(color: Colors.white54),
                   border: InputBorder.none,
-                  suffixIcon: const Icon(Icons.search, color: Colors.white),
+                  suffixIcon: Icon(Icons.search, color: Colors.white),
                 ),
               ),
             ),
-            SizedBox(height: 24),
-            MessageCardWidget(
-              personImage:
-                  '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
-              personName: 'John Smith',
-              message:
-                  'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (ctx) => const ChatScreen()),
-                );
-              },
+            const SizedBox(height: 24),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _userChatsStream(currentUser.uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Sem conversas ainda...",
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    );
+                  }
+                  final chats = snapshot.data!.docs;
+                  return ListView.builder(
+                    itemCount: chats.length,
+                    itemBuilder: (context, index) {
+                      final chat = chats[index];
+                      final chatId = chat.id;
+                      final participants = List<String>.from(
+                        chat['participants'],
+                      );
+                      // Mostra o outro utilizador
+                      final otherUid = participants.firstWhere(
+                        (uid) => uid != currentUser.uid,
+                      );
+
+                      return FutureBuilder<String>(
+                        future: _getLastMessage(chatId),
+                        builder: (context, msgSnapshot) {
+                          final lastMsg = msgSnapshot.data ?? '';
+                          return Card(
+                            color: const Color(0xFF191919),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              leading: const CircleAvatar(
+                                backgroundImage: AssetImage(
+                                  '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
+                                ),
+                              ),
+                              title: Text(
+                                otherUid,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text(
+                                lastMsg,
+                                style: const TextStyle(color: Colors.white70),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (ctx) => ChatScreen(chatId: chatId),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -125,7 +216,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.7), // fundo translúcido
+            color: Colors.black.withOpacity(0.7),
             borderRadius: BorderRadius.circular(40),
           ),
           child: Row(
@@ -134,10 +225,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
               _buildNavItem(Icons.home, 0),
               _buildNavItem(Icons.search, 1),
               _buildNavItem(Icons.chat_bubble_outline, 2),
-
               GestureDetector(
                 onTap: () => _onItemTapped(3),
-                child: CircleAvatar(
+                child: const CircleAvatar(
                   radius: 20,
                   backgroundImage: AssetImage(
                     '/Users/diogodemouramarques/Desktop/SpotsApp/sportsocial/assets/person1.jpg',
